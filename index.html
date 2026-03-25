@@ -826,16 +826,11 @@ function generateSummary() {
   sendBtn.disabled = false;
 }
 
+const EJS_PUBKEY   = 'Umwr9guxIoZgwUXd1';
+const EJS_SERVICE  = 'service_stoidv2';
+const EJS_TEMPLATE = 'template_j1j4qck';
+
 function sendEmail() {
-  const pubkey   = localStorage.getItem('ejs_pubkey');
-  const service  = localStorage.getItem('ejs_service');
-  const template = localStorage.getItem('ejs_template');
-
-  if (!pubkey || !service || !template) {
-    document.getElementById('modal-config').classList.add('show');
-    return;
-  }
-
   const sendBtn = document.getElementById('send-btn');
   sendBtn.textContent = '⏳ Envoi en cours...';
   sendBtn.disabled = true;
@@ -845,8 +840,8 @@ function sendEmail() {
   const nom    = document.getElementById('nom')?.value || '';
   const from   = (prenom + ' ' + nom).trim() || 'Un étudiant';
 
-  emailjs.init({ publicKey: pubkey });
-  emailjs.send(service, template, {
+  emailjs.init({ publicKey: EJS_PUBKEY });
+  emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
     to_email: 'tristan.michon@viacesi.fr',
     subject:  `Formulaire délégué — ${from}`,
     message:  text,
@@ -866,32 +861,6 @@ function sendEmail() {
     sendBtn.disabled = false;
   });
 }
-
-function saveConfig() {
-  const pub  = document.getElementById('ejs-pubkey').value.trim();
-  const svc  = document.getElementById('ejs-service').value.trim();
-  const tmpl = document.getElementById('ejs-template').value.trim();
-  if (!pub || !svc || !tmpl) { alert('Remplis tous les champs.'); return; }
-  localStorage.setItem('ejs_pubkey',   pub);
-  localStorage.setItem('ejs_service',  svc);
-  localStorage.setItem('ejs_template', tmpl);
-  document.getElementById('modal-config').classList.remove('show');
-  // Pre-fill next time
-  document.getElementById('ejs-pubkey').value   = pub;
-  document.getElementById('ejs-service').value  = svc;
-  document.getElementById('ejs-template').value = tmpl;
-  alert('Configuration sauvegardée ! Clique à nouveau sur Envoyer.');
-}
-
-// Pre-fill config if already saved
-window.addEventListener('DOMContentLoaded', () => {
-  const p = localStorage.getItem('ejs_pubkey');
-  const s = localStorage.getItem('ejs_service');
-  const t = localStorage.getItem('ejs_template');
-  if (p) document.getElementById('ejs-pubkey').value   = p;
-  if (s) document.getElementById('ejs-service').value  = s;
-  if (t) document.getElementById('ejs-template').value = t;
-});
 
 function closeModal() {
   document.getElementById('modal').classList.remove('show');
