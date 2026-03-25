@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulaire Délégué — Repas de Classe</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b27;
+    --border: #252d3d;
+    --accent: #e8c97e;
+    --accent2: #5b8dee;
+    --text: #e4e8f0;
+    --muted: #6b7a96;
+    --danger: #e07070;
+    --success: #6fcf97;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(91,141,238,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 10% 80%, rgba(232,201,126,0.06) 0%, transparent 60%);
+  }
+
+  header {
+    max-width: 760px;
+    margin: 0 auto 48px;
+    text-align: center;
+    animation: fadeUp .6s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(232,201,126,.3);
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  header p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .form-container {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    animation: fadeUp .6s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  .card:nth-child(2) { animation-delay: .1s; }
+  .card:nth-child(3) { animation-delay: .2s; }
+  .card:nth-child(4) { animation-delay: .3s; }
+  .card:nth-child(5) { animation-delay: .4s; }
+  .card:nth-child(6) { animation-delay: .5s; }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .card-icon {
+    width: 36px; height: 36px;
+    background: rgba(232,201,126,0.1);
+    border: 1px solid rgba(232,201,126,0.2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+    margin-top: 18px;
+  }
+
+  label:first-of-type { margin-top: 0; }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    transition: border .2s, box-shadow .2s;
+    outline: none;
+    appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(232,201,126,0.5);
+    box-shadow: 0 0 0 3px rgba(232,201,126,0.08);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.5;
+  }
+
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%236b7a96' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px) { .row-2 { grid-template-columns: 1fr; } }
+
+  /* Importance pills */
+  .pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .pill {
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  .pill.active-low    { border-color: var(--success); background: rgba(111,207,151,.1); color: var(--success); }
+  .pill.active-medium { border-color: var(--accent);  background: rgba(232,201,126,.1); color: var(--accent); }
+  .pill.active-high   { border-color: var(--danger);  background: rgba(224,112,112,.1); color: var(--danger); }
+
+  /* Point items */
+  .point-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .point-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    animation: fadeUp .25s ease both;
+  }
+
+  .point-item textarea {
+    min-height: 60px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    font-size: 14px;
+  }
+
+  .point-item textarea:focus {
+    border: none;
+    box-shadow: none;
+  }
+
+  .point-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 100px;
+  }
+
+  .point-meta select {
+    font-size: 12px;
+    padding: 5px 28px 5px 8px;
+    background-color: transparent;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 16px;
+    line-height: 1;
+    transition: color .15s;
+    flex-shrink: 0;
+  }
+
+  .remove-btn:hover { color: var(--danger); }
+
+  .add-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 10px 16px;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    transition: all .15s;
+    margin-top: 4px;
+  }
+
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Satisfaction slider */
+  .slider-wrap { position: relative; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--val, 60%), var(--border) var(--val, 60%));
+    outline: none;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(232,201,126,.15);
+    cursor: pointer;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .slider-val {
+    font-size: 22px;
+    font-family: 'Playfair Display', serif;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  /* Checkboxes */
+  .check-group { display: flex; flex-direction: column; gap: 8px; }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all .15s;
+  }
+
+  .check-item:hover { background: rgba(255,255,255,0.03); border-color: var(--border); }
+
+  .check-item input[type="checkbox"] {
+    width: 17px; height: 17px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Submit */
+  .submit-area {
+    text-align: center;
+    animation: fadeUp .6s .6s ease both;
+  }
+
+  .submit-btn {
+    background: var(--accent);
+    color: #0e1117;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    border-radius: 12px;
+    padding: 15px 48px;
+    cursor: pointer;
+    letter-spacing: .03em;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(232,201,126,.25);
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(232,201,126,.35);
+  }
+
+  .submit-btn:active { transform: translateY(0); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s;
+  }
+
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 540px;
+    width: 90%;
+    text-align: center;
+    transform: translateY(20px);
+    transition: transform .3s;
+  }
+
+  .modal-overlay.show .modal { transform: translateY(0); }
+
+  .modal-icon { font-size: 48px; margin-bottom: 16px; }
+
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    color: var(--accent);
+  }
+
+  .modal p { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+  .modal-btn {
+    padding: 10px 28px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+  }
+
+  .modal-btn.primary {
+    background: var(--accent);
+    color: #0e1117;
+  }
+
+  .modal-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .modal-btn:hover { opacity: .85; }
+
+  /* Print summary */
+  .summary-box {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">📋 Formulaire</div>
+  <h1>Besoin de <span>ton avis</span> !</h1>
+  <p>Ce formulaire est à destination des délégués pour un retour auprès de la direction.</p>
+</header>
+
+<div class="form-container">
+
+  <!-- Section 1 — Infos générales -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📅</div>
+      <div>
+        <div class="card-title">Informations générales</div>
+        <div class="card-subtitle">Délégué(e) relais de la classe</div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div>
+        <label>Prénom</label>
+        <input type="text" id="prenom" placeholder="Ex : Marie">
+      </div>
+      <div>
+        <label>Nom</label>
+        <input type="text" id="nom" placeholder="Ex : Dupont">
+      </div>
+    </div>
+
+    <label>Option</label>
+    <input type="text" id="classe" placeholder="Ex : Génie Industriel">
+  </div>
+
+  <!-- Section 2 — Ambiance générale -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🌡️</div>
+      <div>
+        <div class="card-title">Ambiance générale de la classe</div>
+        <div class="card-subtitle">Évaluation globale du groupe</div>
+      </div>
+    </div>
+
+    <label>Satisfaction globale des étudiants</label>
+    <div class="slider-val" id="slider-display">6 / 10</div>
+    <div class="slider-wrap">
+      <input type="range" id="satisfaction" min="1" max="10" value="6"
+        oninput="updateSlider(this)">
+      <div class="slider-labels"><span>😣 Très insatisfait</span><span>😊 Très satisfait</span></div>
+    </div>
+
+    <label>Tendance de l'ambiance ces dernières semaines</label>
+    <select id="tendance">
+      <option value="">— Sélectionner —</option>
+      <option>📈 En amélioration</option>
+      <option>📉 En dégradation</option>
+      <option>➡️ Stable</option>
+      <option>🎢 Très fluctuante</option>
+    </select>
+
+    <label>Description libre de l'état du groupe</label>
+    <textarea id="ambiance_libre" placeholder="Ex : Beaucoup de fatigue liée aux deadlines cumulées, quelques tensions dans les groupes de projet..."></textarea>
+  </div>
+
+  <!-- Section 3 — Points à aborder -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📌</div>
+      <div>
+        <div class="card-title">Points à aborder</div>
+        <div class="card-subtitle">Problèmes, retours ou demandes à transmettre</div>
+      </div>
+    </div>
+
+    <div class="point-list" id="points-list"></div>
+    <button class="add-btn" onclick="addPoint()">+ Ajouter un point</button>
+  </div>
+
+  <!-- Section 4 — Aspects pédagogiques -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📚</div>
+      <div>
+        <div class="card-title">Aspects pédagogiques</div>
+        <div class="card-subtitle">Cours, organisation et charge de travail</div>
+      </div>
+    </div>
+
+    <label>Cours ou matières posant problème</label>
+    <textarea id="cours_problemes" placeholder="Ex : Le cours de thermodynamique manque de ressources, les TPs de chimie sont mal planifiés..."></textarea>
+
+    <label>Charge de travail perçue</label>
+    <select id="charge">
+      <option value="">— Sélectionner —</option>
+      <option>🟢 Raisonnable et bien répartie</option>
+      <option>🟡 Acceptable mais avec des pics</option>
+      <option>🔴 Trop lourde, épuisement ressenti</option>
+      <option>⚫ Chronique, impact sur la santé mentale</option>
+    </select>
+
+    <label>Organisation & planning (examens, projets, rendus)</label>
+    <textarea id="organisation" placeholder="Ex : Trois examens concentrés sur la même semaine, délais de restitution trop courts..."></textarea>
+
+    <label>Retours sur les intervenants (anonymes si possible)</label>
+    <textarea id="intervenants" placeholder="Ex : Certains intervenants sont très peu disponibles pour les questions, manque de feedback sur les rendus..."></textarea>
+  </div>
+
+  <!-- Section 5 — Vie de classe & bien-être -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">💬</div>
+      <div>
+        <div class="card-title">Vie de classe & bien-être</div>
+        <div class="card-subtitle">Ambiance, cohésion et signaux à surveiller</div>
+      </div>
+    </div>
+
+    <label>Cohésion du groupe</label>
+    <div class="pill-group" id="cohesion-group">
+      <button class="pill" onclick="selectPill(this,'cohesion-group','active-low')">😬 Tendue</button>
+      <button class="pill" onclick="selectPill(this,'cohesion-group','active-medium')">😐 Neutre</button>
+      <button class="pill" onclick="selectPill(this,'cohesion-group','active-high')">🤝 Soudée</button>
+    </div>
+
+    <label>Signaux d'alerte individuels (sans nommer)</label>
+    <textarea id="alertes" placeholder="Ex : Quelques étudiants semblent en grande difficulté psychologique, absences répétées remarquées..."></textarea>
+
+    <label>Besoins de la classe (cocher ce qui s'applique)</label>
+    <div class="check-group">
+      <label class="check-item"><input type="checkbox" id="b1"> Meilleure communication avec l'administration</label>
+      <label class="check-item"><input type="checkbox" id="b2"> Soutien psychologique / cellule d'écoute</label>
+      <label class="check-item"><input type="checkbox" id="b3"> Révision du planning semestre</label>
+      <label class="check-item"><input type="checkbox" id="b4"> Événement de cohésion (team building)</label>
+      <label class="check-item"><input type="checkbox" id="b5"> Accès à des espaces de travail calmes</label>
+      <label class="check-item"><input type="checkbox" id="b6"> Davantage de projets en autonomie</label>
+    </div>
+  </div>
+
+  <!-- Section 6 — Demandes & attentes -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🎯</div>
+      <div>
+        <div class="card-title">Demandes & attentes</div>
+        <div class="card-subtitle">Ce que vous espérez obtenir à l'issue du repas</div>
+      </div>
+    </div>
+
+    <label>Demandes concrètes à la direction</label>
+    <textarea id="demandes" placeholder="Ex : Un débriefing collectif en amphi, une réunion de suivi dans 6 semaines, un ajustement du calendrier..."></textarea>
+
+    <label>Propositions ou solutions suggérées par les étudiants</label>
+    <textarea id="propositions" placeholder="Ex : Créer un espace Discord pour les annonces urgentes, instaurer des sessions de questions hebdomadaires..."></textarea>
+
+    <label>Suites souhaitées après ce repas</label>
+    <select id="suites">
+      <option value="">— Sélectionner —</option>
+      <option>Compte-rendu écrit partagé à la classe</option>
+      <option>Réunion de suivi planifiée</option>
+      <option>Actions concrètes avec délai annoncé</option>
+      <option>Retour par e-mail sous 2 semaines</option>
+      <option>Autre (préciser dans les notes)</option>
+    </select>
+
+    <label>Notes complémentaires</label>
+    <textarea id="notes" placeholder="Tout ce qui n'a pas été mentionné..."></textarea>
+  </div>
+
+</div>
+
+<div class="submit-area" style="max-width:760px;margin:32px auto 0">
+  <button class="submit-btn" onclick="generateSummary()">✨ Générer & envoyer le récapitulatif</button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon" id="modal-icon">📄</div>
+    <h2 id="modal-title">Récapitulatif prêt</h2>
+    <p id="modal-desc">Voici un résumé structuré. Clique sur "Envoyer" pour le transmettre au délégué.</p>
+    <div class="summary-box" id="summary-content"></div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="modal-btn secondary" onclick="closeModal()">Fermer</button>
+      <button class="modal-btn primary" id="send-btn" onclick="sendEmail()">📨 Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal config EmailJS -->
+<div class="modal-overlay" id="modal-config">
+  <div class="modal">
+    <div class="modal-icon">⚙️</div>
+    <h2 style="color:var(--accent2)">Configuration EmailJS</h2>
+    <p>Pour activer l'envoi par e-mail, connecte ton compte <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent)">EmailJS</a> (gratuit). Renseigne tes identifiants ci-dessous — ils seront sauvegardés dans le navigateur.</p>
+    <div style="text-align:left;margin-top:16px;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="margin-top:0">Public Key</label>
+        <input type="text" id="ejs-pubkey" placeholder="Ex : aBcDeFgHiJkLmNoP">
+      </div>
+      <div>
+        <label>Service ID</label>
+        <input type="text" id="ejs-service" placeholder="Ex : service_xxxxxxx">
+      </div>
+      <div>
+        <label>Template ID</label>
+        <input type="text" id="ejs-template" placeholder="Ex : template_xxxxxxx">
+      </div>
+    </div>
+    <p style="margin-top:14px;font-size:12px;color:var(--muted)">
+      👉 Crée un compte sur emailjs.com → Add Service (Gmail) → Create Template avec les variables <code style="color:var(--accent)">{{subject}}</code>, <code style="color:var(--accent)">{{message}}</code>, <code style="color:var(--accent)">{{to_email}}</code>.
+    </p>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="modal-btn secondary" onclick="document.getElementById('modal-config').classList.remove('show')">Annuler</button>
+      <button class="modal-btn primary" onclick="saveConfig()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Slider ---
+function updateSlider(el) {
+  const v = el.value;
+  el.style.setProperty('--val', (v-1)/9*100 + '%');
+  document.getElementById('slider-display').textContent = v + ' / 10';
+}
+updateSlider(document.getElementById('satisfaction'));
+
+// --- Points dynamiques ---
+let pointCount = 0;
+
+function addPoint() {
+  pointCount++;
+  const id = 'point-' + pointCount;
+  const div = document.createElement('div');
+  div.className = 'point-item';
+  div.id = id;
+  div.innerHTML = `
+    <div style="flex:1">
+      <textarea placeholder="Décris le point à aborder..." oninput="autoResize(this)"></textarea>
+    </div>
+    <div class="point-meta">
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px;font-weight:500;">Priorité</div>
+        <select title="Priorité">
+          <option value="basse">🟢 Basse</option>
+          <option value="moyenne" selected>🟡 Moyenne</option>
+          <option value="haute">🔴 Haute</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px;font-weight:500;">Thème</div>
+        <select title="Thème">
+          <option>Pédagogie</option>
+          <option>Organisation</option>
+          <option>Bien-être</option>
+          <option>Logistique</option>
+          <option>Autre</option>
+        </select>
+      </div>
+    </div>
+    <button class="remove-btn" onclick="removePoint('${id}')" title="Supprimer">✕</button>
+  `;
+  document.getElementById('points-list').appendChild(div);
+}
+
+function removePoint(id) {
+  document.getElementById(id)?.remove();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+// Add 2 default points
+addPoint(); addPoint();
+
+// --- Pills ---
+function selectPill(el, groupId, cls) {
+  document.querySelectorAll('#' + groupId + ' .pill').forEach(p => {
+    p.classList.remove('active-low','active-medium','active-high');
+  });
+  el.classList.add(cls);
+}
+
+// --- Summary ---
+function generateSummary() {
+  const get = id => (document.getElementById(id)?.value || '').trim();
+
+  const points = [];
+  document.querySelectorAll('#points-list .point-item').forEach(item => {
+    const txt = item.querySelector('textarea').value.trim();
+    const prio = item.querySelectorAll('select')[0].value;
+    const cat  = item.querySelectorAll('select')[1].value;
+    if (txt) points.push(`  • [${prio.toUpperCase()}] (${cat}) ${txt}`);
+  });
+
+  const besoins = [];
+  ['b1','b2','b3','b4','b5','b6'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el?.checked) besoins.push('  ✓ ' + el.closest('label').textContent.trim());
+  });
+
+  const cohesionActive = document.querySelector('#cohesion-group .pill.active-low, #cohesion-group .pill.active-medium, #cohesion-group .pill.active-high');
+
+  const lines = [
+    '═══════════════════════════════════════════',
+    '  REPAS DÉLÉGUÉ — NOTE DE PRÉPARATION',
+    '═══════════════════════════════════════════',
+    '',
+    `Délégué(e)  : ${(get('prenom') + ' ' + get('nom')).trim() || '—'}`,
+    `Classe      : ${get('classe') || '—'}`,
+
+    '',
+    '───────────────────────────────────────────',
+    '  AMBIANCE GÉNÉRALE',
+    '───────────────────────────────────────────',
+    `Satisfaction : ${document.getElementById('satisfaction').value} / 10`,
+    `Tendance     : ${get('tendance') || '—'}`,
+    `Cohésion     : ${cohesionActive?.textContent || '—'}`,
+    '',
+    get('ambiance_libre') ? `Contexte :\n${get('ambiance_libre').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    '',
+    '───────────────────────────────────────────',
+    '  POINTS À ABORDER',
+    '───────────────────────────────────────────',
+    points.length ? points.join('\n') : '  Aucun point saisi.',
+    '',
+    '───────────────────────────────────────────',
+    '  PÉDAGOGIE & ORGANISATION',
+    '───────────────────────────────────────────',
+    get('cours_problemes') ? `Cours problématiques :\n${get('cours_problemes').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    `Charge de travail : ${get('charge') || '—'}`,
+    get('organisation') ? `Organisation :\n${get('organisation').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    get('intervenants') ? `Retours intervenants :\n${get('intervenants').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    '',
+    '───────────────────────────────────────────',
+    '  BIEN-ÊTRE & BESOINS',
+    '───────────────────────────────────────────',
+    get('alertes') ? `Signaux d'alerte :\n${get('alertes').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    besoins.length ? `\nBesoins identifiés :\n${besoins.join('\n')}` : '',
+    '',
+    '───────────────────────────────────────────',
+    '  DEMANDES & SUITES ATTENDUES',
+    '───────────────────────────────────────────',
+    get('demandes') ? `Demandes :\n${get('demandes').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    get('propositions') ? `\nPropositions étudiants :\n${get('propositions').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    `\nSuites souhaitées : ${get('suites') || '—'}`,
+    get('notes') ? `\nNotes complémentaires :\n${get('notes').split('\n').map(l=>'  '+l).join('\n')}` : '',
+    '',
+    '═══════════════════════════════════════════',
+    `  Document généré le ${new Date().toLocaleDateString('fr-FR')}`,
+    '═══════════════════════════════════════════',
+  ].filter(l => l !== null && l !== undefined);
+
+  document.getElementById('summary-content').textContent = lines.join('\n');
+  document.getElementById('modal').classList.add('show');
+  // Reset modal state
+  document.getElementById('modal-icon').textContent = '📄';
+  document.getElementById('modal-title').textContent = 'Récapitulatif prêt';
+  document.getElementById('modal-desc').textContent = 'Voici un résumé structuré. Clique sur "Envoyer" pour le transmettre au délégué.';
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.textContent = '📨 Envoyer';
+  sendBtn.disabled = false;
+}
+
+function sendEmail() {
+  const pubkey   = localStorage.getItem('ejs_pubkey');
+  const service  = localStorage.getItem('ejs_service');
+  const template = localStorage.getItem('ejs_template');
+
+  if (!pubkey || !service || !template) {
+    document.getElementById('modal-config').classList.add('show');
+    return;
+  }
+
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.textContent = '⏳ Envoi en cours...';
+  sendBtn.disabled = true;
+
+  const text = document.getElementById('summary-content').textContent;
+  const prenom = document.getElementById('prenom')?.value || '';
+  const nom    = document.getElementById('nom')?.value || '';
+  const from   = (prenom + ' ' + nom).trim() || 'Un étudiant';
+
+  emailjs.init({ publicKey: pubkey });
+  emailjs.send(service, template, {
+    to_email: 'tristan.michon@viacesi.fr',
+    subject:  `Formulaire délégué — ${from}`,
+    message:  text,
+    from_name: from,
+  }).then(() => {
+    document.getElementById('modal-icon').textContent = '✅';
+    document.getElementById('modal-title').textContent = 'Envoyé !';
+    document.getElementById('modal-desc').textContent = 'Le récapitulatif a bien été transmis au délégué.';
+    sendBtn.textContent = '✅ Envoyé';
+  }).catch((err) => {
+    console.error('EmailJS error:', err);
+    const msg = err?.text || err?.message || err?.status || JSON.stringify(err);
+    document.getElementById('modal-icon').textContent = '❌';
+    document.getElementById('modal-title').textContent = 'Erreur d\'envoi';
+    document.getElementById('modal-desc').textContent = 'Erreur : ' + msg;
+    sendBtn.textContent = '📨 Réessayer';
+    sendBtn.disabled = false;
+  });
+}
+
+function saveConfig() {
+  const pub  = document.getElementById('ejs-pubkey').value.trim();
+  const svc  = document.getElementById('ejs-service').value.trim();
+  const tmpl = document.getElementById('ejs-template').value.trim();
+  if (!pub || !svc || !tmpl) { alert('Remplis tous les champs.'); return; }
+  localStorage.setItem('ejs_pubkey',   pub);
+  localStorage.setItem('ejs_service',  svc);
+  localStorage.setItem('ejs_template', tmpl);
+  document.getElementById('modal-config').classList.remove('show');
+  // Pre-fill next time
+  document.getElementById('ejs-pubkey').value   = pub;
+  document.getElementById('ejs-service').value  = svc;
+  document.getElementById('ejs-template').value = tmpl;
+  alert('Configuration sauvegardée ! Clique à nouveau sur Envoyer.');
+}
+
+// Pre-fill config if already saved
+window.addEventListener('DOMContentLoaded', () => {
+  const p = localStorage.getItem('ejs_pubkey');
+  const s = localStorage.getItem('ejs_service');
+  const t = localStorage.getItem('ejs_template');
+  if (p) document.getElementById('ejs-pubkey').value   = p;
+  if (s) document.getElementById('ejs-service').value  = s;
+  if (t) document.getElementById('ejs-template').value = t;
+});
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function copySummary() {
+  const text = document.getElementById('summary-content').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.modal-btn.primary');
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = '📋 Copier', 2000);
+  });
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
